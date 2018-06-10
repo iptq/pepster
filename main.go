@@ -5,8 +5,9 @@ import (
 )
 
 func main() {
-	token := *flag.String("token", "", "Discord bot token.")
+	token := flag.String("token", "", "Discord bot token.")
+	flag.Parse()
 
-	pepster := NewPepster(token)
+	pepster := NewPepster(*token)
 	pepster.Run()
 }

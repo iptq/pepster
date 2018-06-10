@@ -1,2 +1,0 @@
-pepster:
-	go build -o $@

@@ -28,5 +28,15 @@ func NewPepster(token string) (pepster *Pepster) {
 
 // Run is the main function of the bot
 func (pepster *Pepster) Run() {
+	pepster.login()
+}
 
+func (pepster *Pepster) login() {
+	err := pepster.api.Open()
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
+	log.Println("connected")
 }
