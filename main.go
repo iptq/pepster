@@ -2,17 +2,36 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/thehowl/conf"
 )
 
+// Config describes the pepster config
+type Config struct {
+	Token  string `description:"Bot token for authentication"`
+	APIKey string `description:"osu! API key"`
+}
+
+var defaultCfg = Config{}
+
 func main() {
-	token := flag.String("token", "", "Discord bot token.")
+	configFile := flag.String("conf", "pepster.conf", "config file location")
 	flag.Parse()
 
-	pepster := NewPepster("Bot " + *token)
+	config := Config{}
+	err := conf.Load(&config, *configFile)
+	if err == conf.ErrNoFile {
+		conf.Export(defaultCfg, *configFile)
+		fmt.Println("Default configuration written to " + *configFile)
+		os.Exit(0)
+	}
+
+	pepster := NewPepster(config)
 	go pepster.Run()
 
 	// wait for signals

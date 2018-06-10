@@ -4,23 +4,27 @@ import (
 	"log"
 
 	"github.com/bwmarrin/discordgo"
+	osuapi "github.com/thehowl/go-osuapi"
 )
 
 // Pepster describes an instance of pepster bot
 type Pepster struct {
-	api      *discordgo.Session
+	dg       *discordgo.Session
+	api      *osuapi.Client
 	commands Commands
 }
 
 // NewPepster creates and initializes a new instance of Pepster
-func NewPepster(token string) (pepster *Pepster) {
+func NewPepster(config Config) (pepster *Pepster) {
 	pepster = new(Pepster)
 
-	dg, err := discordgo.New(token)
+	dg, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
 		log.Fatal(err)
 	}
-	pepster.api = dg
+	pepster.dg = dg
+
+	pepster.api = osuapi.NewClient(config.APIKey)
 
 	pepster.commands = NewCommands(pepster)
 	return
@@ -29,18 +33,18 @@ func NewPepster(token string) (pepster *Pepster) {
 // Run is the main function of the bot
 func (pepster *Pepster) Run() {
 	// handlers
-	pepster.api.AddHandler(pepster.messageHandler)
+	pepster.dg.AddHandler(pepster.messageHandler)
 
 	pepster.login()
 }
 
 // Close shuts everything down gracefully
 func (pepster *Pepster) Close() {
-	pepster.api.Close()
+	pepster.dg.Close()
 }
 
 func (pepster *Pepster) login() {
-	err := pepster.api.Open()
+	err := pepster.dg.Open()
 	if err != nil {
 		log.Fatal(err)
 	}
