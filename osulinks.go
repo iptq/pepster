@@ -48,6 +48,9 @@ func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, 
 		return maps[i].DifficultyRating > maps[j].DifficultyRating
 	})
 
+	if len(maps) == 0 {
+		return
+	}
 	firstMap := maps[0]
 	description := fmt.Sprintf("Length: %s / BPM: %.1f\n", timeFormat(firstMap.TotalLength), firstMap.BPM)
 
