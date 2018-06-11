@@ -22,11 +22,24 @@ var mapsetColormap = map[osuapi.ApprovedStatus]int{
 }
 
 func (pepster *Pepster) osuMapDetails(bid int, s *discordgo.Session, m *discordgo.MessageCreate) {
-	// maps, err := pepster.api.GetBeatmaps(osuapi.GetBeatmapsOpts{BeatmapID: bid})
+	pepster.osuDetailHelper(-1, bid, s, m)
 }
 
 func (pepster *Pepster) osuMapsetDetails(sid int, s *discordgo.Session, m *discordgo.MessageCreate) {
-	maps, err := pepster.api.GetBeatmaps(osuapi.GetBeatmapsOpts{BeatmapSetID: sid})
+	pepster.osuDetailHelper(sid, -1, s, m)
+}
+
+func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, m *discordgo.MessageCreate) {
+	opts := osuapi.GetBeatmapsOpts{}
+	if sid != -1 {
+		opts.BeatmapSetID = sid
+	} else if bid != -1 {
+		opts.BeatmapID = bid
+	} else {
+		// bad function call
+		return
+	}
+	maps, err := pepster.api.GetBeatmaps(opts)
 	if err != nil {
 		log.Println(err)
 		return
@@ -39,7 +52,11 @@ func (pepster *Pepster) osuMapsetDetails(sid int, s *discordgo.Session, m *disco
 	description := fmt.Sprintf("Length: %s / BPM: %.1f\n", timeFormat(firstMap.TotalLength), firstMap.BPM)
 
 	diffDetails := make([]string, 0)
-	for _, bmap := range maps[:5] {
+	previewLength := 5
+	if len(maps) < 5 {
+		previewLength = len(maps)
+	}
+	for _, bmap := range maps[:previewLength] {
 		diffDetails = append(diffDetails, formatHelper(bmap))
 	}
 	description += strings.Join(diffDetails, "\n")
@@ -62,7 +79,7 @@ func (pepster *Pepster) osuMapsetDetails(sid int, s *discordgo.Session, m *disco
 		Description: description,
 		Color:       mapsetColormap[firstMap.Approved],
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: fmt.Sprintf("https://b.ppy.sh/thumb/%dl.jpg", sid),
+			URL: fmt.Sprintf("https://b.ppy.sh/thumb/%dl.jpg", firstMap.BeatmapSetID),
 		},
 	}
 	_, err = s.ChannelMessageSendEmbed(m.ChannelID, &embed)
