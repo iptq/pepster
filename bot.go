@@ -32,10 +32,9 @@ func NewPepster(config Config) (pepster *Pepster) {
 
 // Run is the main function of the bot
 func (pepster *Pepster) Run() {
-	// handlers
 	pepster.dg.AddHandler(pepster.messageHandler)
-
 	pepster.login()
+	go pepster.QueueMonitor()
 }
 
 // Close shuts everything down gracefully

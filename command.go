@@ -91,10 +91,8 @@ func colorCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
 		return
 	}
 	// remove existing colors
-	log.Printf("%+v\n", roleMap)
 	for _, roleID := range member.Roles {
 		role, ok := roleMap[roleID]
-		log.Println(ok, roleID)
 		if ok && strings.HasPrefix(role, "Color:") {
 			err := s.GuildMemberRoleRemove(channel.GuildID, m.Author.ID, roleID)
 			if err != nil {
