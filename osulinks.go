@@ -74,6 +74,8 @@ func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, 
 		}
 		description += fmt.Sprintf("\n... %d more difficult%s", remaining, suffix)
 	}
+	description += "\n"
+	description += fmt.Sprintf("mapped by [%s](https://osu.ppy.sh/u/%s)", firstMap.Creator, firstMap.Creator)
 
 	embed := discordgo.MessageEmbed{
 		URL:         fmt.Sprintf("https://osu.ppy.sh/s/%d", sid),
