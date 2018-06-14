@@ -20,8 +20,9 @@ func NewCommands(pepster *Pepster) (commands Commands) {
 	commands = Commands{
 		pepster: pepster,
 		cmdmap: map[string]command{
-			"color": colorCommand,
-			"help":  helpCommand,
+			"color":  colorCommand,
+			"help":   helpCommand,
+			"source": sourceCommand,
 		},
 	}
 	return
@@ -29,6 +30,13 @@ func NewCommands(pepster *Pepster) (commands Commands) {
 
 func helpCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
 	_, err := s.ChannelMessageSend(m.ChannelID, "no")
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func sourceCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
+	_, err := s.ChannelMessageSend(m.ChannelID, "https://github.com/iptq/pepster")
 	if err != nil {
 		log.Println(err)
 	}
@@ -70,6 +78,7 @@ func colorCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
 			break
 		}
 	}
+
 	if !colorRoleFound {
 		// create the role
 		newRole, err := s.GuildRoleCreate(channel.GuildID)
@@ -90,12 +99,13 @@ func colorCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
 		log.Println(err)
 		return
 	}
+
 	// remove existing colors
-	log.Printf("%+v\n", roleMap)
+	// log.Printf("%+v\n", roleMap)
 	for _, roleID := range member.Roles {
 		role, ok := roleMap[roleID]
 		log.Println(ok, roleID)
-		if ok && strings.HasPrefix(role, "Color:") {
+		if ok && strings.HasPrefix(role, "Color: ") {
 			err := s.GuildMemberRoleRemove(channel.GuildID, m.Author.ID, roleID)
 			if err != nil {
 				log.Println(err)
@@ -112,7 +122,7 @@ func colorCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
 	}
 
 	// send emoji reply!
-	err = s.MessageReactionAdd(m.ChannelID, m.ID, "👍")
+	err = s.MessageReactionAdd(m.ChannelID, m.ID, "\xf0\x9f\x91\x8d")
 	if err != nil {
 		log.Println(err)
 		return
