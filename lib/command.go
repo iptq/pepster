@@ -1,11 +1,16 @@
 package lib
 
 import (
+	"fmt"
 	"log"
+	"regexp"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
+
+var mentionRgx = regexp.MustCompile(`.*(\d+).*`)
 
 type command func([]string, *discordgo.Session, *discordgo.Message)
 
@@ -23,9 +28,27 @@ func NewCommands(pepster *Pepster) (commands Commands) {
 			"color":  colorCommand,
 			"help":   helpCommand,
 			"source": sourceCommand,
+			"invite": inviteCommand,
+			"tell":   pepster.tellCommand,
 		},
 	}
 	return
+}
+
+func successReact(s *discordgo.Session, m *discordgo.Message) {
+	err := s.MessageReactionAdd(m.ChannelID, m.ID, "\xf0\x9f\x91\x8d")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
+func errorReact(s *discordgo.Session, m *discordgo.Message) {
+	err := s.MessageReactionAdd(m.ChannelID, m.ID, "\xf0\x9f\x9a\xab")
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }
 
 func helpCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
@@ -39,6 +62,32 @@ func sourceCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
 	_, err := s.ChannelMessageSend(m.ChannelID, "https://github.com/iptq/pepster")
 	if err != nil {
 		log.Println(err)
+	}
+}
+
+func inviteCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
+	_, err := s.ChannelMessageSend(m.ChannelID, "https://discord.gg/MpXXvsD")
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (pepster *Pepster) tellCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
+	var usage = "Usage: !tell <mention> <message>"
+	if len(args) < 2 {
+		s.ChannelMessageSend(m.ChannelID, usage)
+		return
+	}
+
+	mention := args[0]
+	message := fmt.Sprintf("At %s, %s said: %s", time.Now().String(), m.Author.Username, strings.Join(args[1:], " "))
+	if match := mentionRgx.FindStringSubmatch(mention); match != nil {
+		did := match[1]
+		pepster.tellMap[did] = append(pepster.tellMap[did], message)
+		successReact(s, m)
+	} else {
+		log.Println("error on", m.Content)
+		errorReact(s, m)
 	}
 }
 
@@ -122,9 +171,5 @@ func colorCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
 	}
 
 	// send emoji reply!
-	err = s.MessageReactionAdd(m.ChannelID, m.ID, "\xf0\x9f\x91\x8d")
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	successReact(s, m)
 }

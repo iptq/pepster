@@ -12,6 +12,7 @@ type Pepster struct {
 	dg       *discordgo.Session
 	api      *osuapi.Client
 	commands Commands
+	tellMap  map[string][]string
 }
 
 // NewPepster creates and initializes a new instance of Pepster
@@ -25,6 +26,7 @@ func NewPepster(config Config) (pepster *Pepster) {
 	pepster.dg = dg
 
 	pepster.api = osuapi.NewClient(config.APIKey)
+	pepster.tellMap = make(map[string][]string)
 
 	pepster.commands = NewCommands(pepster)
 	return

@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,6 +18,16 @@ func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.Messag
 	// ignore bot messages
 	if m.Author.ID == s.State.User.ID {
 		return
+	}
+
+	// first check for messages
+	msgs := pepster.tellMap[m.Author.ID]
+	summary := fmt.Sprintf("<@%s>: while you were gone, you missed these messages:\n", m.Author.ID)
+	for _, msg := range msgs {
+		summary += msg + "\n"
+	}
+	if len(msgs) > 0 {
+		s.ChannelMessageSend(m.ChannelID, summary)
 	}
 
 	// commands
