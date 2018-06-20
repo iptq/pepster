@@ -1,4 +1,4 @@
-package main
+package lib
 
 var colors = map[string]int{
 	"aliceblue":            15792383,

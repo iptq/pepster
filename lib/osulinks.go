@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"fmt"
@@ -18,6 +18,17 @@ var mapsetColormap = map[osuapi.ApprovedStatus]int{
 	osuapi.StatusLoved:     colors["pink"],
 	osuapi.StatusApproved:  colors["lime"],
 	osuapi.StatusRanked:    colors["lime"],
+}
+
+var statusMap = map[osuapi.ApprovedStatus]string{
+	osuapi.StatusGraveyard: "Graveyard",
+	osuapi.StatusWIP:       "Work in Progress",
+	osuapi.StatusPending:   "Pending",
+
+	osuapi.StatusQualified: "Qualified",
+	osuapi.StatusLoved:     "Loved",
+	osuapi.StatusApproved:  "Approved",
+	osuapi.StatusRanked:    "Ranked",
 }
 
 var diffEmoji = map[string]string{
@@ -85,6 +96,10 @@ func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, 
 		description += fmt.Sprintf("(%d difficult%s not shown)", remaining, suffix)
 	}
 
+	footer := &discordgo.MessageEmbedFooter{
+		Text: fmt.Sprintf("Status: %s", statusMap[firstMap.Approved]),
+	}
+
 	embed := discordgo.MessageEmbed{
 		URL:         fmt.Sprintf("https://osu.ppy.sh/s/%d", sid),
 		Type:        "rich",
@@ -92,6 +107,7 @@ func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, 
 		Description: description,
 		Color:       mapsetColormap[firstMap.Approved],
 		Fields:      fields,
+		Footer:      footer,
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: fmt.Sprintf("https://b.ppy.sh/thumb/%dl.jpg", firstMap.BeatmapSetID),
 		},
