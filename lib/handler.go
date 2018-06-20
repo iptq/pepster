@@ -27,6 +27,7 @@ func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.Messag
 		summary += msg + "\n"
 	}
 	if len(msgs) > 0 {
+		pepster.tellMap[m.Author.ID] = nil
 		s.ChannelMessageSend(m.ChannelID, summary)
 	}
 

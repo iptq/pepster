@@ -80,9 +80,10 @@ func (pepster *Pepster) tellCommand(args []string, s *discordgo.Session, m *disc
 	}
 
 	mention := args[0]
-	message := fmt.Sprintf("At %s, %s said: %s", time.Now().String(), m.Author.Username, strings.Join(args[1:], " "))
+	t := time.Now().Format(time.RFC1123)
+	message := fmt.Sprintf("At %s, %s said: %s", t, m.Author.Username, strings.Join(args[1:], " "))
 	if match := mentionRgx.FindStringSubmatch(mention); match != nil {
-		did := match[1]
+		did := m.Mentions[0].ID
 		pepster.tellMap[did] = append(pepster.tellMap[did], message)
 		successReact(s, m)
 	} else {
