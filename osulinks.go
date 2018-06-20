@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"sort"
-	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	osuapi "github.com/thehowl/go-osuapi"
@@ -20,6 +19,16 @@ var mapsetColormap = map[osuapi.ApprovedStatus]int{
 	osuapi.StatusApproved:  colors["lime"],
 	osuapi.StatusRanked:    colors["lime"],
 }
+
+var diffEmoji = map[string]string{
+	"easy":   "<:easy:459040242050007042>",
+	"normal": "<:normal:459040207031894037>",
+	"hard":   "<:hard:459040169472032788>",
+	"insane": "<:insane:459040134181158933>",
+	"expert": "<:expert:459038617688473600>",
+}
+
+var maxDiffsToShow = 4
 
 func (pepster *Pepster) osuMapDetails(bid int, s *discordgo.Session, m *discordgo.MessageCreate) {
 	pepster.osuDetailHelper(-1, bid, s, m)
@@ -52,37 +61,37 @@ func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, 
 		return
 	}
 	firstMap := maps[0]
-	description := fmt.Sprintf("Length: %s / BPM: %.1f\n", timeFormat(firstMap.TotalLength), firstMap.BPM)
+	description := fmt.Sprintf("\\\U0001f558 **Length:** %s - \U0001d160 **BPM:** %.1f\n", timeFormat(firstMap.TotalLength), firstMap.BPM)
 
-	diffDetails := make([]string, 0)
-	previewLength := 5
-	if len(maps) < 5 {
+	previewLength := maxDiffsToShow
+	if len(maps) < maxDiffsToShow {
 		previewLength = len(maps)
 	}
-	for _, bmap := range maps[:previewLength] {
-		diffDetails = append(diffDetails, formatHelper(bmap))
+	fields := make([]*discordgo.MessageEmbedField, previewLength)
+	for i, bmap := range maps[:previewLength] {
+		fields[i] = formatHelper(bmap)
+		// diffDetails = append(diffDetails, formatHelper(bmap))
 	}
-	description += strings.Join(diffDetails, "\n")
+	// description += strings.Join(diffDetails, "\n")
 
-	if len(maps) > 5 {
-		remaining := len(maps) - 5
+	if len(maps) > maxDiffsToShow {
+		remaining := len(maps) - maxDiffsToShow
 		var suffix string
 		if remaining == 1 {
 			suffix = "y"
 		} else {
 			suffix = "ies"
 		}
-		description += fmt.Sprintf("\n... %d more difficult%s", remaining, suffix)
+		description += fmt.Sprintf("(%d difficult%s not shown)", remaining, suffix)
 	}
-	description += "\n"
-	description += fmt.Sprintf("mapped by [%s](https://osu.ppy.sh/u/%s)", firstMap.Creator, firstMap.Creator)
 
 	embed := discordgo.MessageEmbed{
 		URL:         fmt.Sprintf("https://osu.ppy.sh/s/%d", sid),
 		Type:        "rich",
-		Title:       fmt.Sprintf("%s - %s", firstMap.Artist, firstMap.Title),
+		Title:       fmt.Sprintf("%s - %s (mapped by %s)", firstMap.Artist, firstMap.Title, firstMap.Creator),
 		Description: description,
 		Color:       mapsetColormap[firstMap.Approved],
+		Fields:      fields,
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: fmt.Sprintf("https://b.ppy.sh/thumb/%dl.jpg", firstMap.BeatmapSetID),
 		},
@@ -94,8 +103,26 @@ func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, 
 	}
 }
 
-func formatHelper(b osuapi.Beatmap) string {
-	return fmt.Sprintf("**%s**: %.2f\n CS%.1f / AR%.1f / OD%.1f / HP%.1f", b.DiffName, b.DifficultyRating, b.CircleSize, b.ApproachRate, b.OverallDifficulty, b.HPDrain)
+func formatHelper(b osuapi.Beatmap) *discordgo.MessageEmbedField {
+	var emoji string
+	switch {
+	case b.DifficultyRating < 1.5:
+		emoji = "easy"
+	case b.DifficultyRating < 2.25:
+		emoji = "normal"
+	case b.DifficultyRating < 3.75:
+		emoji = "hard"
+	case b.DifficultyRating < 5.25:
+		emoji = "insane"
+	default:
+		emoji = "expert"
+	}
+	line := fmt.Sprintf("**Difficulty:** %.2f - **Max Combo:** %dx\n CS%.1f / AR%.1f / OD%.1f / HP%.1f", b.DifficultyRating, b.MaxCombo, b.CircleSize, b.ApproachRate, b.OverallDifficulty, b.HPDrain)
+
+	return &discordgo.MessageEmbedField{
+		Name:  fmt.Sprintf("%s %s", diffEmoji[emoji], b.DiffName),
+		Value: line,
+	}
 }
 
 func timeFormat(seconds int) string {

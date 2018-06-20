@@ -13,11 +13,14 @@ import (
 
 // Config describes the pepster config
 type Config struct {
-	Token  string `description:"Bot token for authentication"`
-	APIKey string `description:"osu! API key"`
+	Token    string `description:"Bot token for authentication"`
+	APIKey   string `description:"osu! API key"`
+	Database string `description:"Path to sqlite database file"`
 }
 
-var defaultCfg = Config{}
+var defaultCfg = Config{
+	Database: "pepster.db",
+}
 
 func main() {
 	configFile := flag.String("conf", "pepster.conf", "config file location")

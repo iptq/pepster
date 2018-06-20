@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	mapPattern    = regexp.MustCompile(`.*https?://osu.ppy.sh/b/(\d+).*`)
-	mapsetPattern = regexp.MustCompile(`.*https?://osu.ppy.sh/(s|beatmapsets)/(\d+).*`)
+	mapPattern    = regexp.MustCompile(`.*https?://osu.ppy.sh/b/(\d+)[^/]*`)
+	mapsetPattern = regexp.MustCompile(`.*https?://osu.ppy.sh/(s|beatmapsets)/(\d+)[^/]*`)
 )
 
 func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
