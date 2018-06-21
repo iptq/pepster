@@ -4,11 +4,13 @@ import (
 	"log"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/go-redis/redis"
 	osuapi "github.com/thehowl/go-osuapi"
 )
 
 // Pepster describes an instance of pepster bot
 type Pepster struct {
+	cache    *redis.Client
 	dg       *discordgo.Session
 	api      *osuapi.Client
 	commands Commands
@@ -24,6 +26,12 @@ func NewPepster(config Config) (pepster *Pepster) {
 		log.Fatal(err)
 	}
 	pepster.dg = dg
+
+	// TODO: configure in-memory cache
+	pepster.cache = redis.NewClient(&redis.Options{
+		Addr: "127.0.0.1:6379",
+		DB:   0,
+	})
 
 	pepster.api = osuapi.NewClient(config.APIKey)
 	pepster.tellMap = make(map[string][]string)
