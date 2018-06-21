@@ -20,24 +20,6 @@ func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.Messag
 		return
 	}
 
-	// first check for messages
-	// msgs := pepster.tellMap[m.Author.ID]
-	go func() {
-		key := fmt.Sprintf("tellmap:%s:%s", m.ChannelID, m.Author.ID)
-		msgs := pepster.cache.LRange(key, 0, -1).Val()
-		summary := fmt.Sprintf("<@%s>: while you were gone, you missed these messages:\n", m.Author.ID)
-		for _, msg := range msgs {
-			summary += msg + "\n"
-		}
-		if len(msgs) > 0 {
-			pepster.tellMap[m.Author.ID] = nil
-			_, err := s.ChannelMessageSend(m.ChannelID, summary)
-			if err == nil {
-				pepster.cache.Del(key)
-			}
-		}
-	}()
-
 	// commands
 	if strings.HasPrefix(m.Content, "!") {
 		// it's a command
@@ -62,4 +44,21 @@ func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.Messag
 			pepster.osuMapsetDetails(sid, s, m)
 		}
 	}
+
+	// now check for new messages
+	go func() {
+		key := fmt.Sprintf("tellmap:%s:%s", m.ChannelID, m.Author.ID)
+		msgs := pepster.cache.LRange(key, 0, -1).Val()
+		summary := fmt.Sprintf("<@%s>: while you were gone, you missed these messages:\n", m.Author.ID)
+		for _, msg := range msgs {
+			summary += msg + "\n"
+		}
+		if len(msgs) > 0 {
+			pepster.tellMap[m.Author.ID] = nil
+			_, err := s.ChannelMessageSend(m.ChannelID, summary)
+			if err == nil {
+				pepster.cache.Del(key)
+			}
+		}
+	}()
 }
