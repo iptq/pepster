@@ -2,11 +2,14 @@ package lib
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	humanize "github.com/dustin/go-humanize"
+	"github.com/vmihailenco/msgpack"
 )
 
 var (
@@ -50,8 +53,14 @@ func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.Messag
 		key := fmt.Sprintf("tellmap:%s:%s", m.ChannelID, m.Author.ID)
 		msgs := pepster.cache.LRange(key, 0, -1).Val()
 		summary := fmt.Sprintf("<@%s>: while you were gone, you missed these messages:\n", m.Author.ID)
-		for _, msg := range msgs {
-			summary += msg + "\n"
+		for _, msgencode := range msgs {
+			var msg MissedMessage
+			err := msgpack.Unmarshal([]byte(msgencode), &msg)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			summary += fmt.Sprintf("%s: %s\n", humanize.Time(msg.Timestamp), msg.Message)
 		}
 		if len(msgs) > 0 {
 			pepster.tellMap[m.Author.ID] = nil

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/vmihailenco/msgpack"
 )
 
 var mentionRgx = regexp.MustCompile(`.*(\d+).*`)
@@ -18,6 +19,11 @@ type command func([]string, *discordgo.Session, *discordgo.Message)
 type Commands struct {
 	pepster *Pepster           // pointer to parent pepster object
 	cmdmap  map[string]command // map of commands
+}
+
+type MissedMessage struct {
+	Timestamp time.Time
+	Message   string
 }
 
 // NewCommands creates a new instance of the command manager
@@ -80,12 +86,17 @@ func (pepster *Pepster) tellCommand(args []string, s *discordgo.Session, m *disc
 	}
 
 	mention := args[0]
-	t := time.Now().Format(time.RFC1123)
-	message := fmt.Sprintf("At %s, %s said: %s", t, m.Author.Username, strings.Join(args[1:], " "))
+	message := fmt.Sprintf("%s said: %s", m.Author.Username, strings.Join(args[1:], " "))
 	if match := mentionRgx.FindStringSubmatch(mention); match != nil {
 		did := m.Mentions[0].ID
 		key := fmt.Sprintf("tellmap:%s:%s", m.ChannelID, did)
-		pepster.cache.LPush(key, message)
+		v := MissedMessage{Timestamp: time.Now(), Message: message}
+		value, err := msgpack.Marshal(v)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		pepster.cache.LPush(key, value)
 		successReact(s, m)
 	} else {
 		log.Println("error on", m.Content)
