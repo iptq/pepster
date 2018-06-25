@@ -51,10 +51,13 @@ func (pepster *Pepster) osuMapsetDetails(sid int, s *discordgo.Session, m *disco
 
 func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, m *discordgo.MessageCreate) {
 	opts := osuapi.GetBeatmapsOpts{}
+	var URL string
 	if sid != -1 {
 		opts.BeatmapSetID = sid
+		URL = fmt.Sprintf("https://osu.ppy.sh/s/%d", sid)
 	} else if bid != -1 {
 		opts.BeatmapID = bid
+		URL = fmt.Sprintf("https://osu.ppy.sh/b/%d", bid)
 	} else {
 		// bad function call
 		return
@@ -101,7 +104,7 @@ func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, 
 	}
 
 	embed := discordgo.MessageEmbed{
-		URL:         fmt.Sprintf("https://osu.ppy.sh/s/%d", sid),
+		URL:         URL,
 		Type:        "rich",
 		Title:       fmt.Sprintf("%s - %s (mapped by %s)", firstMap.Artist, firstMap.Title, firstMap.Creator),
 		Description: description,
