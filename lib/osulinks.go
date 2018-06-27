@@ -100,7 +100,7 @@ func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, 
 	}
 
 	footer := &discordgo.MessageEmbedFooter{
-		Text: fmt.Sprintf("Status: %s", statusMap[firstMap.Approved]),
+		Text: fmt.Sprintf("Status: %s | \u2605 Favorites: %d", statusMap[firstMap.Approved], firstMap.FavouriteCount),
 	}
 
 	embed := discordgo.MessageEmbed{
