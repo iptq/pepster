@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	osuapi "github.com/thehowl/go-osuapi"
@@ -122,6 +124,78 @@ func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, 
 	}
 }
 
+func (pepster *Pepster) osuUserDetails(uid string, s *discordgo.Session, m *discordgo.MessageCreate) {
+	opts := osuapi.GetUserOpts{}
+	if id, err := strconv.Atoi(uid); err != nil {
+		opts.Username = uid
+	} else {
+		opts.UserID = id
+	}
+	user, err := pepster.api.GetUser(opts)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	fields := make([]*discordgo.MessageEmbedField, 0)
+	description := fmt.Sprintf("\u25b8 **Rank:** #%d  (%.2fpp)   \u25b8 **%s rank:** #%d\n", user.Rank, user.PP, user.Country, user.CountryRank)
+	description += "haha sux at osu lol"
+
+	stats := make([]string, 0)
+	stats = append(stats, fmt.Sprintf("\u25b8 **Playcount**: %d", user.Playcount))
+	stats = append(stats, fmt.Sprintf("\u25b8 **Level**: %.2f", user.Level))
+	stats = append(stats, fmt.Sprintf("\u25b8 **Accuracy**: %.2f%%", user.Accuracy))
+	overallStats := discordgo.MessageEmbedField{
+		Name:  "Overall Stats",
+		Value: strings.Join(stats, "\n"),
+	}
+	fields = append(fields, &overallStats)
+
+	scoreOpts := osuapi.GetUserScoresOpts{
+		UserID: user.UserID,
+		Limit:  5,
+	}
+	scores, err := pepster.api.GetUserBest(scoreOpts)
+	if err == nil {
+		playList := make([]string, 0)
+		for _, score := range scores {
+			beatmaps, err := pepster.api.GetBeatmaps(osuapi.GetBeatmapsOpts{
+				BeatmapID: score.BeatmapID,
+			})
+			if err != nil || len(beatmaps) < 1 {
+				continue
+			}
+			b := beatmaps[0]
+			mods := ""
+			if score.Mods > 0 {
+				mods = " +" + score.Mods.String()
+			}
+			playList = append(playList, fmt.Sprintf("\u25b8 %.2fpp\t[%s - %s \\[%s\\]](https://osu.ppy.sh/b/%d)%s", score.PP, b.Artist, b.Title, b.DiffName, score.BeatmapID, mods))
+		}
+		plays := strings.Join(playList, "\n")
+		topPlaysField := discordgo.MessageEmbedField{
+			Name:  "Top Plays",
+			Value: plays,
+		}
+		fields = append(fields, &topPlaysField)
+	}
+
+	embed := discordgo.MessageEmbed{
+		URL:         "",
+		Type:        "rich",
+		Title:       fmt.Sprintf(":flag_%s: %s", strings.ToLower(user.Country), user.Username),
+		Description: description,
+		Fields:      fields,
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: fmt.Sprintf("https://a.ppy.sh/%d", user.UserID),
+		},
+	}
+	_, err = s.ChannelMessageSendEmbed(m.ChannelID, &embed)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
 func formatHelper(b osuapi.Beatmap) *discordgo.MessageEmbedField {
 	var emoji string
 	switch {
@@ -136,10 +210,10 @@ func formatHelper(b osuapi.Beatmap) *discordgo.MessageEmbedField {
 	default:
 		emoji = "expert"
 	}
-	line := fmt.Sprintf("**Difficulty:** %.2f - **Max Combo:** %dx\n CS%.1f / AR%.1f / OD%.1f / HP%.1f", b.DifficultyRating, b.MaxCombo, b.CircleSize, b.ApproachRate, b.OverallDifficulty, b.HPDrain)
+	line := fmt.Sprintf("   \u25b8 **Difficulty:** %.2f\u2605   \u25b8 **Max Combo:** %dx\n   \u25b8 **CS:** %.1f \u25b8 **AR:** %.1f \u25b8 **OD:** %.1f \u25b8 **HP:** %.1f", b.DifficultyRating, b.MaxCombo, b.CircleSize, b.ApproachRate, b.OverallDifficulty, b.HPDrain)
 
 	return &discordgo.MessageEmbedField{
-		Name:  fmt.Sprintf("%s %s", diffEmoji[emoji], b.DiffName),
+		Name:  fmt.Sprintf("%s __%s__", diffEmoji[emoji], b.DiffName),
 		Value: line,
 	}
 }

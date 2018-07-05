@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	mapPattern    = regexp.MustCompile(`.*https?://osu.ppy.sh/b/(\d+)[^/]*`)
-	mapsetPattern = regexp.MustCompile(`.*https?://osu.ppy.sh/(s|beatmapsets)/(\d+)[^/]*`)
+	mapPattern    = regexp.MustCompile(`.*https?://(osu|old).ppy.sh/b/(?P<id>\d+)[^/]*`)
+	mapsetPattern = regexp.MustCompile(`.*https?://(osu|old).ppy.sh/(s|beatmapsets)/(?P<id>\d+)[^/]*`)
+	userPattern   = regexp.MustCompile(`.*https?://(osu|old).ppy.sh/(u|users)/([^/]+).*`)
 )
 
 func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -36,16 +37,20 @@ func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.Messag
 
 	// osu link handlers
 	if match := mapPattern.FindStringSubmatch(m.Content); match != nil {
-		bid, err := strconv.Atoi(match[1])
+		bid, err := strconv.Atoi(match[2])
 		if err == nil {
 			pepster.osuMapDetails(bid, s, m)
 		}
 	}
 	if match := mapsetPattern.FindStringSubmatch(m.Content); match != nil {
-		sid, err := strconv.Atoi(match[2])
+		sid, err := strconv.Atoi(match[3])
 		if err == nil {
 			pepster.osuMapsetDetails(sid, s, m)
 		}
+	}
+	if match := userPattern.FindStringSubmatch(m.Content); match != nil {
+		uid := match[3]
+		pepster.osuUserDetails(uid, s, m)
 	}
 
 	// now check for new messages
