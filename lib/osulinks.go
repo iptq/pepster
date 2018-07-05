@@ -3,11 +3,13 @@ package lib
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	humanize "github.com/dustin/go-humanize"
 	osuapi "github.com/thehowl/go-osuapi"
 )
 
@@ -102,7 +104,7 @@ func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, 
 	}
 
 	footer := &discordgo.MessageEmbedFooter{
-		Text: fmt.Sprintf("Status: %s | \u2605 Favorites: %d", statusMap[firstMap.Approved], firstMap.FavouriteCount),
+		Text: fmt.Sprintf("Status: %s | \u2605 Favorites: %s", statusMap[firstMap.Approved], humanize.Comma(int64(firstMap.FavouriteCount))),
 	}
 
 	embed := discordgo.MessageEmbed{
@@ -127,7 +129,8 @@ func (pepster *Pepster) osuDetailHelper(sid int, bid int, s *discordgo.Session, 
 func (pepster *Pepster) osuUserDetails(uid string, s *discordgo.Session, m *discordgo.MessageCreate) {
 	opts := osuapi.GetUserOpts{}
 	if id, err := strconv.Atoi(uid); err != nil {
-		opts.Username = uid
+		s, _ := url.PathUnescape(uid)
+		opts.Username = s
 	} else {
 		opts.UserID = id
 	}
@@ -137,11 +140,11 @@ func (pepster *Pepster) osuUserDetails(uid string, s *discordgo.Session, m *disc
 		return
 	}
 	fields := make([]*discordgo.MessageEmbedField, 0)
-	description := fmt.Sprintf("\u25b8 **Rank:** #%d  (%.2fpp)   \u25b8 **%s rank:** #%d\n", user.Rank, user.PP, user.Country, user.CountryRank)
+	description := fmt.Sprintf("\u25b8 **Rank:** #%s  (%spp)   \u25b8 **%s rank:** #%s\n", humanize.Comma(int64(user.Rank)), humanize.Commaf(user.PP), user.Country, humanize.Comma(int64(user.CountryRank)))
 	description += "haha sux at osu lol"
 
 	stats := make([]string, 0)
-	stats = append(stats, fmt.Sprintf("\u25b8 **Playcount**: %d", user.Playcount))
+	stats = append(stats, fmt.Sprintf("\u25b8 **Playcount**: %s", humanize.Comma(int64(user.Playcount))))
 	stats = append(stats, fmt.Sprintf("\u25b8 **Level**: %.2f", user.Level))
 	stats = append(stats, fmt.Sprintf("\u25b8 **Accuracy**: %.2f%%", user.Accuracy))
 	overallStats := discordgo.MessageEmbedField{
