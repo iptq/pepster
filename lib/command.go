@@ -35,7 +35,10 @@ func NewCommands(pepster *Pepster) (commands Commands) {
 			"help":   helpCommand,
 			"source": sourceCommand,
 			"invite": inviteCommand,
+			"last":   pepster.lastCommand,
 			"tell":   pepster.tellCommand,
+			"get":    pepster.getCommand,
+			"set":    pepster.setCommand,
 		},
 	}
 	return
@@ -102,6 +105,15 @@ func inviteCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func (pepster *Pepster) getCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
+}
+
+func (pepster *Pepster) setCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
+}
+
+func (pepster *Pepster) lastCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
 }
 
 func (pepster *Pepster) tellCommand(args []string, s *discordgo.Session, m *discordgo.Message) {
