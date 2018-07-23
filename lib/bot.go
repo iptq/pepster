@@ -13,7 +13,9 @@ type Pepster struct {
 	cache    *redis.Client
 	dg       *discordgo.Session
 	api      *osuapi.Client
+	conf     Config
 	commands Commands
+	logger   *log.Logger
 	tellMap  map[string][]string
 }
 
@@ -37,6 +39,10 @@ func NewPepster(config Config) (pepster *Pepster) {
 	pepster.tellMap = make(map[string][]string)
 
 	pepster.commands = NewCommands(pepster)
+	pepster.logger = NewLogger(pepster)
+	pepster.conf = config
+
+	pepster.logger.Println("initialized")
 	return
 }
 
@@ -49,6 +55,7 @@ func (pepster *Pepster) Run() {
 
 // Close shuts everything down gracefully
 func (pepster *Pepster) Close() {
+	pepster.logger.Println("closing")
 	pepster.dg.Close()
 }
 
@@ -57,5 +64,5 @@ func (pepster *Pepster) login() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("connected")
+	pepster.logger.Println("connected")
 }

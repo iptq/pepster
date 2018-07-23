@@ -183,7 +183,7 @@ func (pepster *Pepster) osuUserDetails(uid string, s *discordgo.Session, m *disc
 	}
 
 	embed := discordgo.MessageEmbed{
-		URL:         "",
+		URL:         fmt.Sprintf("https://osu.ppy.sh/u/%d", user.UserID),
 		Type:        "rich",
 		Title:       fmt.Sprintf(":flag_%s: %s", strings.ToLower(user.Country), user.Username),
 		Description: description,
