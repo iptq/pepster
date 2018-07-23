@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"log"
@@ -24,6 +24,7 @@ func (pepster *Pepster) QueueMonitor() {
 	var queues map[string]Queue
 	var first = true
 	for {
+		break
 		newQueues, err := fetchQueues()
 		if err != nil {
 			log.Println(err)

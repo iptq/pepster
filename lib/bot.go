@@ -1,17 +1,22 @@
-package main
+package lib
 
 import (
 	"log"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/go-redis/redis"
 	osuapi "github.com/thehowl/go-osuapi"
 )
 
 // Pepster describes an instance of pepster bot
 type Pepster struct {
+	cache    *redis.Client
 	dg       *discordgo.Session
 	api      *osuapi.Client
+	conf     Config
 	commands Commands
+	logger   *log.Logger
+	tellMap  map[string][]string
 }
 
 // NewPepster creates and initializes a new instance of Pepster
@@ -24,9 +29,20 @@ func NewPepster(config Config) (pepster *Pepster) {
 	}
 	pepster.dg = dg
 
+	// TODO: configure in-memory cache
+	pepster.cache = redis.NewClient(&redis.Options{
+		Addr: "127.0.0.1:6379",
+		DB:   0,
+	})
+
 	pepster.api = osuapi.NewClient(config.APIKey)
+	pepster.tellMap = make(map[string][]string)
 
 	pepster.commands = NewCommands(pepster)
+	pepster.logger = NewLogger(pepster)
+	pepster.conf = config
+
+	pepster.logger.Println("initialized")
 	return
 }
 
@@ -39,6 +55,7 @@ func (pepster *Pepster) Run() {
 
 // Close shuts everything down gracefully
 func (pepster *Pepster) Close() {
+	pepster.logger.Println("closing")
 	pepster.dg.Close()
 }
 
@@ -47,5 +64,5 @@ func (pepster *Pepster) login() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("connected")
+	pepster.logger.Println("connected")
 }
