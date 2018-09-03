@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,6 +13,7 @@ import (
 
 func main() {
 	configFile := flag.String("conf", "pepster.conf", "config file location")
+	cmd := flag.Bool("cmd", false, "whether to start as a command line")
 	flag.Parse()
 
 	config := lib.Config{}
@@ -25,13 +25,15 @@ func main() {
 	}
 
 	pepster := lib.NewPepster(config)
-	go pepster.Run()
+	defer pepster.Close()
+	if *cmd {
+		pepster.Cmd()
+	} else {
+		go pepster.Run()
 
-	// wait for signals
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
-	<-sc
-
-	log.Println("shutting down")
-	pepster.Close()
+		// wait for signals
+		sc := make(chan os.Signal, 1)
+		signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+		<-sc
+	}
 }

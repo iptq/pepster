@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/bwmarrin/discordgo"
@@ -27,6 +28,7 @@ func NewPepster(config Config) (pepster *Pepster) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	dg.AddHandler(pepster.guildCreateHandler)
 	pepster.dg = dg
 
 	// TODO: configure in-memory cache
@@ -46,11 +48,24 @@ func NewPepster(config Config) (pepster *Pepster) {
 	return
 }
 
+func (pepster *Pepster) guildCreateHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
+	fmt.Println(g.Name)
+	for _, c := range g.Channels {
+		fmt.Println(" -", c.ID, c.Type, c.Name)
+	}
+}
+
 // Run is the main function of the bot
 func (pepster *Pepster) Run() {
 	pepster.dg.AddHandler(pepster.messageHandler)
 	pepster.login()
 	go pepster.QueueMonitor()
+}
+
+// Cmd runs a cmd
+func (pepster *Pepster) Cmd() {
+	cli := NewCli(pepster)
+	cli.Run()
 }
 
 // Close shuts everything down gracefully
