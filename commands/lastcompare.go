@@ -1,4 +1,4 @@
-package commands
+package pepster
 
 import "github.com/bwmarrin/discordgo"
 

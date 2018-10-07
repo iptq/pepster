@@ -8,22 +8,20 @@ import (
 	"strconv"
 	"strings"
 
-	cmd "pepster/commands"
-
 	"github.com/bwmarrin/discordgo"
 	humanize "github.com/dustin/go-humanize"
 	osuapi "github.com/thehowl/go-osuapi"
 )
 
 var mapsetColormap = map[osuapi.ApprovedStatus]int{
-	osuapi.StatusGraveyard: cmd.Colors["darkgray"],
-	osuapi.StatusWIP:       cmd.Colors["gray"],
-	osuapi.StatusPending:   cmd.Colors["gray"],
+	osuapi.StatusGraveyard: colors["darkgray"],
+	osuapi.StatusWIP:       colors["gray"],
+	osuapi.StatusPending:   colors["gray"],
 
-	osuapi.StatusQualified: cmd.Colors["gold"],
-	osuapi.StatusLoved:     cmd.Colors["pink"],
-	osuapi.StatusApproved:  cmd.Colors["lime"],
-	osuapi.StatusRanked:    cmd.Colors["lime"],
+	osuapi.StatusQualified: colors["gold"],
+	osuapi.StatusLoved:     colors["pink"],
+	osuapi.StatusApproved:  colors["lime"],
+	osuapi.StatusRanked:    colors["lime"],
 }
 
 var statusMap = map[osuapi.ApprovedStatus]string{

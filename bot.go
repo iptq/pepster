@@ -1,18 +1,26 @@
 package pepster
 
 import (
-	"fmt"
 	"log"
+
+	"pepster/models"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-redis/redis"
+	"github.com/go-xorm/core"
+	"github.com/go-xorm/xorm"
 	osuapi "github.com/thehowl/go-osuapi"
+
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Pepster describes an instance of pepster bot
 type Pepster struct {
 	cache    *redis.Client
 	dg       *discordgo.Session
+	db       *xorm.Engine
 	api      *osuapi.Client
 	conf     Config
 	commands Commands
@@ -21,15 +29,27 @@ type Pepster struct {
 }
 
 // NewPepster creates and initializes a new instance of Pepster
-func NewPepster(config Config) (pepster *Pepster) {
+func NewPepster(config Config) (pepster *Pepster, err error) {
 	pepster = new(Pepster)
 
+	// set up discord client
 	dg, err := discordgo.New("Bot " + config.Token)
+	if err != nil {
+		return nil, err
+	}
+	pepster.dg = dg
+
+	// set up database
+	engine, err := xorm.NewEngine(config.DatabaseProvider, config.Database)
 	if err != nil {
 		log.Fatal(err)
 	}
-	dg.AddHandler(pepster.guildCreateHandler)
-	pepster.dg = dg
+	engine.SetMapper(core.GonicMapper{})
+	err = engine.Sync(new(models.User))
+	if err != nil {
+		log.Fatal(err)
+	}
+	pepster.db = engine
 
 	// TODO: configure in-memory cache
 	pepster.cache = redis.NewClient(&redis.Options{
@@ -41,25 +61,21 @@ func NewPepster(config Config) (pepster *Pepster) {
 	pepster.tellMap = make(map[string][]string)
 
 	pepster.commands = NewCommands(pepster)
+	pepster.commands.Register("color", ColorCommand{})
+	pepster.commands.Register("config", ConfigCommand{pepster})
+
 	pepster.logger = NewLogger(pepster)
 	pepster.conf = config
 
 	pepster.logger.Println("initialized")
-	return
-}
-
-func (pepster *Pepster) guildCreateHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
-	fmt.Println(g.Name)
-	for _, c := range g.Channels {
-		fmt.Println(" -", c.ID, c.Type, c.Name)
-	}
+	return pepster, nil
 }
 
 // Run is the main function of the bot
 func (pepster *Pepster) Run() {
 	pepster.dg.AddHandler(pepster.messageHandler)
 	pepster.login()
-	go pepster.QueueMonitor()
+	// go pepster.QueueMonitor()
 }
 
 // Cmd runs a cmd

@@ -1,43 +1,44 @@
 package pepster
 
 import (
-	"regexp"
-	"time"
-
-	cmd "pepster/commands"
+	"fmt"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-var mentionRgx = regexp.MustCompile(`.*(\d+).*`)
+type Command interface {
+	Handle([]string, *discordgo.Session, *discordgo.Message) error
+	GetDescription() string
+}
 
-type command func([]string, *discordgo.Session, *discordgo.Message) error
-
-// Commands is a command manager
 type Commands struct {
-	pepster *Pepster           // pointer to parent pepster object
-	cmdmap  map[string]command // map of commands
+	pepster  *Pepster
+	commands map[string]Command
 }
 
-type MissedMessage struct {
-	Timestamp time.Time
-	Message   string
-}
-
-// NewCommands creates a new instance of the command manager
-func NewCommands(pepster *Pepster) (commands Commands) {
-	commands = Commands{
-		pepster: pepster,
-		cmdmap: map[string]command{
-			"color":   cmd.ColorCommand,
-			"help":    cmd.HelpCommand,
-			"source":  cmd.SourceCommand,
-			"invite":  cmd.DevChanCommand,
-			"last":    cmd.LastCommand,
-			"compare": cmd.CompareCommand,
-			"get":     cmd.GetCommand,
-			"set":     cmd.SetCommand,
-		},
+func NewCommands(pepster *Pepster) Commands {
+	commands := make(map[string]Command)
+	return Commands{
+		pepster,
+		commands,
 	}
-	return
+}
+
+func (cmd *Commands) Get(key string) (Command, bool) {
+	val, ok := cmd.commands[key]
+	return val, ok
+}
+
+func (cmd *Commands) Register(key string, val Command) {
+	cmd.commands[key] = val
+}
+
+func (cmd *Commands) GenerateHelp() string {
+	lines := make([]string, 0)
+	lines = append(lines, "**!help**: display this help")
+	for name, command := range cmd.commands {
+		lines = append(lines, fmt.Sprintf("**!%s**: %s", name, command.GetDescription()))
+	}
+	return strings.Join(lines, "\n")
 }

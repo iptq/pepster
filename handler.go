@@ -2,14 +2,11 @@ package pepster
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	humanize "github.com/dustin/go-humanize"
-	"github.com/vmihailenco/msgpack"
 )
 
 var (
@@ -26,13 +23,33 @@ func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.Messag
 
 	// commands
 	if strings.HasPrefix(m.Content, "!") {
-		// it's a command
-		parts := strings.Split(m.Content[1:], " ")
-		fn, ok := pepster.commands.cmdmap[parts[0]]
-		if ok {
-			fn(parts[1:], s, m.Message)
+		line := strings.TrimLeft(m.Content, "!")
+
+		// TODO: some kind of quote parser for this
+		argv := strings.Split(line, " ")
+		if len(argv) == 0 {
+			return
 		}
-		return
+
+		// special help command
+		if argv[0] == "help" {
+			help := pepster.commands.GenerateHelp()
+			s.ChannelMessageSendEmbed(m.ChannelID, &discordgo.MessageEmbed{
+				Description: help,
+			})
+		}
+
+		// switch on command
+		command, ok := pepster.commands.Get(argv[0])
+		if !ok {
+			// just don't do anything
+			return
+		} else {
+			err := command.Handle(argv, s, m.Message)
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> error: %s", m.Author.ID, err))
+			}
+		}
 	}
 
 	// osu link handlers
@@ -52,27 +69,4 @@ func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.Messag
 		uid := match[3]
 		pepster.osuUserDetails(uid, s, m)
 	}
-
-	// now check for new messages
-	go func() {
-		key := fmt.Sprintf("tellmap:%s:%s", m.ChannelID, m.Author.ID)
-		msgs := pepster.cache.LRange(key, 0, -1).Val()
-		summary := fmt.Sprintf("<@%s>: while you were gone, you missed these messages:\n", m.Author.ID)
-		for _, msgencode := range msgs {
-			var msg MissedMessage
-			err := msgpack.Unmarshal([]byte(msgencode), &msg)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-			summary += fmt.Sprintf("%s: %s\n", humanize.Time(msg.Timestamp), msg.Message)
-		}
-		if len(msgs) > 0 {
-			pepster.tellMap[m.Author.ID] = nil
-			_, err := s.ChannelMessageSend(m.ChannelID, summary)
-			if err == nil {
-				pepster.cache.Del(key)
-			}
-		}
-	}()
 }

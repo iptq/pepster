@@ -1,4 +1,4 @@
-package commands
+package pepster
 
 import (
 	"errors"
@@ -8,17 +8,21 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func ColorCommand(args []string, s *discordgo.Session, m *discordgo.Message) error {
-	var usage = "Usage: !color <name>, where name is from https://www.w3schools.com/colors/colors_names.asp"
-	if len(args) != 1 {
-		s.ChannelMessageSend(m.ChannelID, usage)
-		return errors.New("Incorrect usage.")
+type ColorCommand struct{}
+
+func (cmd ColorCommand) GetDescription() string {
+	return "change your [color](https://www.w3schools.com/colors/colors_names.asp) (ex: `!color DodgerBlue` or `!color none`)"
+}
+
+func (cmd ColorCommand) Handle(args []string, s *discordgo.Session, m *discordgo.Message) error {
+	var usage = "!color <name>, where name is from https://www.w3schools.com/colors/colors_names.asp"
+	if len(args) < 2 {
+		return errors.New(usage)
 	}
-	name := strings.ToLower(args[0])
-	value, ok := Colors[name]
+	name := strings.ToLower(args[1])
+	value, ok := colors[name]
 	if !ok {
-		s.ChannelMessageSend(m.ChannelID, usage)
-		return errors.New("Color not found.")
+		return errors.New("color was not found. pick from https://www.w3schools.com/colors/colors_names.asp")
 	}
 
 	// get roles
