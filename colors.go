@@ -1,4 +1,4 @@
-package lib
+package pepster
 
 var colors = map[string]int{
 	"aliceblue":            15792383,

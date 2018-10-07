@@ -1,4 +1,4 @@
-package lib
+package pepster
 
 // Config describes the pepster config
 type Config struct {
