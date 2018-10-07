@@ -1,6 +1,6 @@
-package pepster
+package commands
 
-var colors = map[string]int{
+var Colors = map[string]int{
 	"aliceblue":            15792383,
 	"antiquewhite":         16444375,
 	"aqua":                 65535,
