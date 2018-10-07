@@ -14,12 +14,8 @@ type ConfigCommand struct {
 	pepster *Pepster
 }
 
-func (cmd ConfigCommand) buildKey(user string, key string) string {
-	return fmt.Sprintf("config/%s/%s", user, key)
-}
-
 func (cmd ConfigCommand) getKey(user string, key string) (string, error) {
-	raw, err := cmd.pepster.cache.Get(cmd.buildKey(user, key)).Result()
+	raw, err := cmd.pepster.cache.Get(fmt.Sprintf("config/%s/%s", user, key)).Result()
 	if err != nil {
 		return "", err
 	}
@@ -50,7 +46,7 @@ func (cmd ConfigCommand) setKey(user string, key string, val string) error {
 	default:
 		return fmt.Errorf("`%s` is not a valid key", key)
 	}
-	_, err := cmd.pepster.cache.Set(cmd.buildKey(user, key), raw, 0).Result()
+	_, err := cmd.pepster.cache.Set(fmt.Sprintf("config/%s/%s", user, key), raw, 0).Result()
 	return err
 }
 

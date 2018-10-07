@@ -62,6 +62,9 @@ func NewPepster(config Config) (pepster *Pepster, err error) {
 
 	pepster.commands = NewCommands(pepster)
 	pepster.commands.Register("color", ColorCommand{})
+	pepster.commands.Register("devchan", DevChanCommand{})
+	pepster.commands.Register("source", SourceCommand{})
+	pepster.commands.Register("last", LastCommand{pepster})
 	pepster.commands.Register("config", ConfigCommand{pepster})
 
 	pepster.logger = NewLogger(pepster)

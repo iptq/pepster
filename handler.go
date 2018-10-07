@@ -50,23 +50,23 @@ func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.Messag
 				s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("<@%s> error: %s", m.Author.ID, err))
 			}
 		}
-	}
-
-	// osu link handlers
-	if match := mapPattern.FindStringSubmatch(m.Content); match != nil {
-		bid, err := strconv.Atoi(match[2])
-		if err == nil {
-			pepster.osuMapDetails(bid, s, m)
+	} else {
+		// osu link handlers
+		if match := mapPattern.FindStringSubmatch(m.Content); match != nil {
+			bid, err := strconv.Atoi(match[2])
+			if err == nil {
+				pepster.osuMapDetails(bid, s, m)
+			}
 		}
-	}
-	if match := mapsetPattern.FindStringSubmatch(m.Content); match != nil {
-		sid, err := strconv.Atoi(match[3])
-		if err == nil {
-			pepster.osuMapsetDetails(sid, s, m)
+		if match := mapsetPattern.FindStringSubmatch(m.Content); match != nil {
+			sid, err := strconv.Atoi(match[3])
+			if err == nil {
+				pepster.osuMapsetDetails(sid, s, m)
+			}
 		}
-	}
-	if match := userPattern.FindStringSubmatch(m.Content); match != nil {
-		uid := match[3]
-		pepster.osuUserDetails(uid, s, m)
+		if match := userPattern.FindStringSubmatch(m.Content); match != nil {
+			uid := match[3]
+			pepster.osuUserDetails(uid, s, m)
+		}
 	}
 }
