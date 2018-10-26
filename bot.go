@@ -84,6 +84,7 @@ func (pepster *Pepster) Run() {
 // Cmd runs a cmd
 func (pepster *Pepster) Cmd() {
 	cli := NewCli(pepster)
+	pepster.dg.AddHandler(pepster.guildCreateHandler)
 	cli.Run()
 }
 

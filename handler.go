@@ -15,6 +15,13 @@ var (
 	userPattern   = regexp.MustCompile(`.*https?://(osu|old).ppy.sh/(u|users)/([^/]+).*`)
 )
 
+func (pepster *Pepster) guildCreateHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
+	fmt.Println(g.Name)
+	for _, c := range g.Channels {
+		fmt.Println(" -", c.ID, c.Type, c.Name)
+	}
+}
+
 func (pepster *Pepster) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// ignore bot messages
 	if m.Author.ID == s.State.User.ID {
