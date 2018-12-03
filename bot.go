@@ -53,8 +53,9 @@ func NewPepster(config Config) (pepster *Pepster, err error) {
 
 	// TODO: configure in-memory cache
 	pepster.cache = redis.NewClient(&redis.Options{
-		Addr: "127.0.0.1:6379",
-		DB:   0,
+		Addr:     config.RedisAddress,
+		DB:       config.RedisDB,
+		Password: config.RedisPassword,
 	})
 
 	pepster.api = osuapi.NewClient(config.APIKey)
