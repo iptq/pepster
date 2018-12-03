@@ -36,6 +36,8 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/satori/go.uuid v1.2.0/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdhQKdks0=
 github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24/go.mod h1:M+9NzErvs504Cn4c5DxATwIqPbtswREoFCre64PpcG4=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
+github.com/thehowl/conf v0.1.0 h1:eHJU24Vf11zk6kwHZmsQEdWsxCOjlPRhPBpUPzfnH4Y=
+github.com/thehowl/conf v0.1.0/go.mod h1:o9YvtFg3Ixu+XsNHEJNYfa+3mLUimgtSruvzx9IHKj8=
 github.com/thehowl/go-osuapi v0.0.0-20171004075559-b918f5da7258 h1:2OTu91OtMKpHj1tNTyqUZDoRXAJz2VoAMgK3Y4SYymE=
 github.com/thehowl/go-osuapi v0.0.0-20171004075559-b918f5da7258/go.mod h1:Y+d6hzF4BM2sz5ytQmJLSImHq9dP9JS3dM4xwarFoUQ=
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=

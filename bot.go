@@ -1,6 +1,7 @@
 package pepster
 
 import (
+	"fmt"
 	"log"
 
 	"pepster/models"
@@ -50,6 +51,8 @@ func NewPepster(config Config) (pepster *Pepster, err error) {
 		log.Fatal(err)
 	}
 	pepster.db = engine
+
+	fmt.Println("%+v", config)
 
 	// TODO: configure in-memory cache
 	pepster.cache = redis.NewClient(&redis.Options{
