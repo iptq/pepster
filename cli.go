@@ -1,12 +1,11 @@
 package pepster
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/chzyer/readline"
 )
 
 type Cli struct {
@@ -30,11 +29,18 @@ func (cli *Cli) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate)
 }
 
 func (cli *Cli) Run() {
+	rl, err := readline.New("> ")
+	if err != nil {
+		panic(err)
+	}
+	defer rl.Close()
+
 	cli.pepster.login()
-	reader := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Print(">>> ")
-		inp, _ := reader.ReadString('\n')
+		inp, err := rl.Readline()
+		if err != nil {
+			break
+		}
 		if strings.HasPrefix(inp, "!chan") {
 			parts := strings.Split(inp, " ")
 			cli.currentChannel = strings.Trim(parts[1], "\n ")

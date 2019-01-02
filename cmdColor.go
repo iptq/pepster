@@ -43,7 +43,6 @@ func (cmd ColorCommand) Handle(args []string, s *discordgo.Session, m *discordgo
 		if role.Name == "Color: "+name {
 			colorRole = role
 			colorRoleFound = true
-			break
 		}
 	}
 
@@ -67,6 +66,7 @@ func (cmd ColorCommand) Handle(args []string, s *discordgo.Session, m *discordgo
 
 	// remove existing colors
 	// log.Printf("%+v\n", roleMap)
+	// log.Printf("%+v\n", member.Roles)
 	for _, roleID := range member.Roles {
 		role, ok := roleMap[roleID]
 		log.Println(ok, roleID)

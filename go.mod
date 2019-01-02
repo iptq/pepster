@@ -3,6 +3,7 @@ module pepster
 require (
 	github.com/anaskhan96/soup v1.0.1
 	github.com/bwmarrin/discordgo v0.19.0
+	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/dustin/go-humanize v1.0.0
 	github.com/go-redis/redis v6.14.2+incompatible
 	github.com/go-sql-driver/mysql v1.4.1
