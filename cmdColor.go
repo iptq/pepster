@@ -30,7 +30,7 @@ func (cmd ColorCommand) Handle(args []string, s *discordgo.Session, m *discordgo
 	if err != nil {
 		return err
 	}
-	roles, err := s.GuildRoles(channel.GuildID)
+	existingRoles, err := s.GuildRoles(channel.GuildID)
 	if err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func (cmd ColorCommand) Handle(args []string, s *discordgo.Session, m *discordgo
 	var colorRole *discordgo.Role
 	var colorRoleFound = false
 	roleMap := make(map[string]string)
-	for _, role := range roles {
+	for _, role := range existingRoles {
 		roleMap[role.ID] = role.Name
 		if role.Name == "Color: "+name {
 			colorRole = role
@@ -65,14 +65,13 @@ func (cmd ColorCommand) Handle(args []string, s *discordgo.Session, m *discordgo
 	}
 
 	// remove existing colors
-	// log.Printf("%+v\n", roleMap)
-	// log.Printf("%+v\n", member.Roles)
 	for _, roleID := range member.Roles {
 		role, ok := roleMap[roleID]
 		log.Println(ok, roleID)
 		if ok && strings.HasPrefix(role, "Color: ") {
 			err := s.GuildMemberRoleRemove(channel.GuildID, m.Author.ID, roleID)
 			if err != nil {
+				log.Println("could not remove role", roleID, "from", m.Author.ID, "in", channel.GuildID)
 				return err
 			}
 		}
