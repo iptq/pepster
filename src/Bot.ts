@@ -1,11 +1,16 @@
 import {Backend, Message} from "./Backend";
+import {Command} from "./commands";
+
+import HelpCommand from "./commands/help";
 
 export default class Bot<B extends Backend<M>, M extends Message> {
     private prefixMap = new Map<string, string>();
     private startTime: Date;
+    private commands: Command[] = [];
 
     constructor(private backend: B) {
         this.startTime = new Date();
+        this.commands.push(new HelpCommand());
 
         this.backend.registerMessageHandler(message => {
             // ignore events that are sent before bot starts up

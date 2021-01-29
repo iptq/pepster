@@ -1,9 +1,9 @@
-import {Client, Message as DiscordJsMessage} from "discord.js";
+import {Client, Channel, Message as DiscordJsMessage, APIMessage} from "discord.js";
 import {parse as parseShell} from "shell-quote";
 
-import {Backend, Message} from "./Backend";
+import {MessageHandlerFunc, Backend, Message, Reply} from "./Backend";
 
-export class DiscordBackend implements Backend<DiscordMessage> {
+export class DiscordBackend implements Backend {
     name = "discord";
 
     private client: Client;
@@ -12,7 +12,7 @@ export class DiscordBackend implements Backend<DiscordMessage> {
         this.client = new Client();
     }
 
-    registerMessageHandler(func) {
+    registerMessageHandler(func: MessageHandlerFunc<this>) {
         this.client.on("message", event => {
             let message = new DiscordMessage(event);
             func(message);
@@ -22,9 +22,12 @@ export class DiscordBackend implements Backend<DiscordMessage> {
     async start() {
         await this.client.login(this.botToken);
     }
+
+    async sendReply(reply: Reply<this>) {
+    }
 }
 
-export class DiscordMessage implements Message {
+export class DiscordMessage implements Message<DiscordBackend> {
     constructor(private message: DiscordJsMessage) {
     }
 
@@ -47,5 +50,10 @@ export class DiscordMessage implements Message {
         }
 
         return parseShell(body).map(entry => entry.toString());
+    }
+}
+
+export class DiscordReply implements Reply<DiscordBackend> {
+    constructor(target: Channel, message: APIMessage) {
     }
 }

@@ -1,17 +1,25 @@
-export interface Backend<M extends Message> {
+export type MessageHandlerFunc<B extends Backend> = (_: Message<B>) => void;
+
+export interface Backend {
     /** The unique name for this backend */
     name: string;
 
     /** Registers the default message handler */
-    registerMessageHandler(func: (_: M) => void): void;
+    registerMessageHandler(func: MessageHandlerFunc<this>): void;
 
     /** Starts the server */
     start(): Promise<void>;
+
+    /** Send a reply */
+    sendReply(reply: Reply<this>): Promise<void>;
 }
 
-export interface Message {
+export interface Message<B extends Backend> {
     /** Returns a unique string identifying this room. */
     getRoomId(): string;
+
+    /** Returns a unique string identifying the author. */
+    getAuthorId(): string;
 
     /** Returns the timestamp when this message was sent */
     sentAt(): Date;
@@ -21,4 +29,7 @@ export interface Message {
 
     /** Get an array consisting of the command and the arguments */
     getCommandParts(prefix: string): string[];
+}
+
+export interface Reply<B extends Backend> {
 }

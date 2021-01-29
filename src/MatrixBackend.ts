@@ -3,7 +3,7 @@ import {parse as parseShell} from "shell-quote";
 
 import {Backend, Message} from "./Backend";
 
-export class MatrixBackend implements Backend<MatrixMessage> {
+export class MatrixBackend implements Backend {
     name = "matrix";
 
     private client: MatrixClient;
@@ -25,7 +25,7 @@ export class MatrixBackend implements Backend<MatrixMessage> {
     }
 }
 
-export class MatrixMessage implements Message {
+export class MatrixMessage implements Message<MatrixBackend> {
     constructor(private roomId: string, private event: any) { }
 
     getRoomId() {
