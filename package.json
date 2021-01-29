@@ -1,0 +1,17 @@
+{
+  "scripts": {
+    "start": "ts-node main.ts"
+  },
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0",
+    "matrix-bot-sdk": "^0.5.13",
+    "shell-quote": "^1.7.2"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^8.2.0",
+    "@types/shell-quote": "^1.7.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.3"
+  }
+}
